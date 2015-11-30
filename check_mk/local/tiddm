@@ -1,0 +1,24 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+from docker import Client
+import json
+cli = Client(base_url='unix://var/run/docker.sock')
+containers = cli.containers()
+output = {'status': 0, 'image': 'null', 'perfdata': 0, 'out': 0}
+
+for c in containers:
+                containerID = c['Id']
+                output['image'] = str(c['Image'])
+                inspectObj = cli.inspect_container(containerID)
+                if inspectObj['State']['Running'] == True:
+                        output['status'] = 0
+                        tag = "OK"
+                        value = 1
+                else:
+                        output['status'] = 2
+                        tag = "ERROR"
+                        value = 0
+
+                output['perfdata'] = "count=" + str(value) + ";" + str(0) + ";" + str(0) + ";0;"
+                output['out'] = str(c['Id'])
+		print(str(output['status']) + " Docker:" + output['out'] [:12] + " " + output['perfdata'] + " Docker Image: "+ output['image'][:12])
